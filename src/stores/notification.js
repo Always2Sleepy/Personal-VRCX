@@ -1652,17 +1652,29 @@ export const useNotificationStore = defineStore('Notification', () => {
             parseFloat(advancedSettingsStore.notificationOpacity.toString()) /
             100;
         switch (noty.type) {
-            case 'OnPlayerJoined':
+            case 'OnPlayerJoined': {
+                let message = `${noty.displayName} has joined`;
+                // Check if user is age-verified and add color formatting
+                if (noty.userId) {
+                    const user = userStore.cachedUsers.get(noty.userId);
+                    if (user) {
+                        // Use ANSI color codes: \x1b[32m for green, \x1b[31m for red, \x1b[0m to reset
+                        const colorCode = user.ageVerified ? '\x1b[32m' : '\x1b[31m';
+                        const resetCode = '\x1b[0m';
+                        message = `${colorCode}${noty.displayName}${resetCode} has joined`;
+                    }
+                }
                 AppApi.OVRTNotification(
                     playOvrtHudNotifications,
                     playOvrtWristNotifications,
                     'VRCX',
-                    `${noty.displayName} has joined`,
+                    message,
                     timeout,
                     opacity,
                     image
                 );
                 break;
+            }
             case 'OnPlayerLeft':
                 AppApi.OVRTNotification(
                     playOvrtHudNotifications,
